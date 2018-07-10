@@ -1,0 +1,170 @@
+% -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
+% \VignetteIndexEntry{An R Package for Discrete Response Modeling for High-Dimensional Data} 
+% \VignetteKeyword{models}
+%% no need \usepackage{Sweave.sty}
+\documentclass[article, shortnames, nojss]{jss}
+\usepackage{amsmath, graphicx}
+%\usepackage[superscript,biblabel]{cite}
+\title{A tutorial on fitting discrete response models in high-dimensional datasets with the \pkg{countgmifs} package}
+\author{Kellie J. Archer$^\star$,  Rebecca R. Lehman$^a$, Mateusz Makowski$^b$\\
+$^\star$ The Ohio State University,
+$^a$ The United Network of Organ Sharing,
+$^b$ The EMMES Corporation}
+\newcommand{\bet}{\mbox{\boldmath $\beta$}}
+\newcommand{\gambold}{\mbox{\boldmath $\gamma$}}
+\newcommand{\pibold}{\mbox{\boldmath $\pi$}}
+\newcommand{\phibold}{\mbox{\boldmath $\phi$}}
+\newcommand{\thetabold}{\mbox{\boldmath $\theta$}}
+\newcommand{\nubold}{\mbox{\boldmath $\nu$}}
+\newcommand{\taubold}{\mbox{\boldmath $\tau$}}
+\newcommand{\alphabold}{\mbox{\boldmath $\alpha$}}
+\newcommand{\wbold}{\boldsymbol{w}}
+\Plainauthor{Kellie J Archer, Rebecca Lehman, Mateusz Makowski}
+\Plaintitle{countgmifs: An R Package for Discrete Regression in High-dimensional Data Settings}
+\Shorttitle{High-dimensional Discrete Response Models}
+
+\Abstract{In this tutorial we describe our \pkg{countgmifs} \proglang{R} package, available from the Comprehensive R Archive Network, that can fit Poisson and negative binomial models when the number of predictors ($P$) exceeds the sample size ($N$).  We then illustrate the functions in the \pkg{countgmifs} \proglang{R} package using simulated data.  
+}
+\Keywords{discrete response, high-dimensional features, penalized models, \proglang{R}}
+\Plainkeywords{discrete response, high-dimensional features, penalized models, R}
+
+\Address{
+Kellie J. Archer\\
+Division of Biostatistics\\
+College of Public Health\\
+The Ohio State University\\
+1841 Neil Ave.\\ 
+240 Cunz Hall\\
+Columbus, OH 43210\\
+E-mail: \email{archer.43@osu.edu}\\
+URL: \url{https://cph.osu.edu/people/karcher}\\
+ \\
+Rebecca R. Lehman\\
+United Network for Organ Sharing\\
+Richmond, VA\\
+E-mail: \email{lehmanrr@mymail.vcu.edu}\\
+\\
+Mateusz Makowski\\
+The EMMES Corporation\\
+401 N. Washington Street\\
+Rockville, MD 20850\\
+E-mail: \email{mmakowski@emmes.com}\\
+}
+\SweaveOpts{echo=FALSE}
+\usepackage{a4wide}
+
+\begin{document}
+
+%\maketitle
+\section{Introduction}
+Various algorithms can be used for obtaining solutions for the Least Absolute Shrinkage and Selection Operator (LASSO) \citep{Tibs1996, Tibs1997} and elastic net penalized models \citep{Zou}. In the linear regression setting, the Incremental Forward Stagewise (IFS) is a penalized solution that enforces monotonicity \citep{Hastie}. IFS can be generalized to problems involving other than squared error loss, and the adaption is called the generalized monotone incremental forward stagewise (GMIFS) method \citep{Hastie}. Herein we extended the GMIFS method  \citep{Hastie} to the discrete response setting and implemented functions in our \pkg{countgmifs} \proglang{R} package \citep{Makowski}. The \code{countgmifs} function can be used to fit penalized Poisson and negative binomial regression models in the presence of a high-dimensional covariate space.
+
+\section{Implementation}
+The \pkg{countgmifs} package was written in the \proglang{R} programming environment \citep{RTeam}.  The \code{countgmifs} function allows the user to specify a model formula, identify the matrix of covariates to be penalized in the model fitting algorithm using the \code{x} parameter, and additionally specify the model type (\code{family}) as either  \code{"poisson"} or  \code{"nb"} (default). The defaults for updating the penalized coefficients are \code{epsilon=0.001} and \code{tol=1e-5}. Our likelihood functions were written in \proglang{R} and  tested by comparing our \proglang{R} output to output produced by the \code{glm} function and \code{glm.nb} function in the \proglang{R} \pkg{MASS} package using benchmark datasets for data where $P<N$.
+
+\section{Example}
+We will generate data where the outcome follows a negative binomial distribution to illustrate our \pkg{countgmifs} package. First, we set the random seed simply so that our results can be replicated.
+<<echo=FALSE>>=
+options(width = 70)
+@
+<<echo=TRUE>>=
+set.seed(26)
+@
+Next, we set the sample size to $N=50$, the number of covariates to $P=500$, the intercept to $\beta_0=0.50$, the true parameter values are set to $\pm\log(1.5)$ for the first 5 variables and to 0 for the remaining 495 predictors, and the heterogeneity parameter to $\alpha=0.50$.
+<<echo=TRUE>>=
+n <- 50 
+p <- 500 
+intercept<- .5
+beta<- c(log(1.5), log(1.5), -log(1.5), -log(1.5), -log(1.5), rep(0,495)) 
+alpha<- 0.5 
+@
+Using these settings, we generate our $P$ covariates from a standard normal distribution, calculate the observation mean $\mu_i$, then generate the discrete response from the negative binomial distribution using this mean and our heterogeneity parameter $\alpha$. Thereafter we combine the discrete response \code{y} with the matrix of covariates \code{x} to form our data frame.
+<<echo=TRUE>>= 
+x<- matrix(rnorm(n*p,0,1), nrow=n, ncol=p, byrow=TRUE) 
+colnames(x)<- paste("Var",1:p, sep="")  
+mu<- exp(intercept + crossprod(t(x),beta))
+y<- rnbinom(n=n, size=1/alpha ,mu=mu) # Discrete response
+data<- data.frame(y,x)
+@
+
+Now we can fit our negative binomial GMIFS model. We load the library then make a call to the \code{countgmifs} function.
+<<echo=TRUE>>=
+library("countgmifs")
+nb<-countgmifs(y ~ 1 , data=data, offset=NULL, x=x, epsilon=0.01, tol=0.001, 
+       scale=TRUE, verbose=FALSE)
+@
+To fit a model where all predictors are penalized the model formula is specified to fit an intercept only model and the predictors to be penalized are specified using the \code{x} parameter.  Because \code{offset=NULL}, that indicates we are modeling a count rather than a rate, where the denominator for the rate would be passed using the \code{offset} parameter. The parameter \code{x=} specifies the variables that are included in the model in a \lq\lq penalized\rq\rq\ fashion. The \code{x} parameter can either be a vector naming columns in the \code{data.frame} specified by the \code{data} parameter or \code{x} can be the \code{data.frame} name with the columns to include (or exclude) indicated by their (negative) index. Prior to model fitting \code{NA} values should be imputed or removed from the \code{data.frame}.  By default, \code{epsilon=0.001}, however, to reduce processing time for CRAN testing builds of this package, we have changed \code{epsilon=0.01} and \code{tol=0.001}. The parameter \code{scale=TRUE} indicates that the predictors are to be centered and scaled; \code{verbose=FALSE} indicates we do not want to monitor the step in the fitting process. Because the GMIFS procedure is incremental, the user may want to specify \code{verbose=TRUE} to print the step number in order to monitor the status of the model fitting procedure. By default a negative binomial regression model is fit; a Poisson model can be fit by specifying \code{family="poisson"}.
+
+Methods including \code{coef}, \code{plot}, \code{predict}, \code{fitted}, \code{print}, and \code{summary} can be applied to \code{countgmifs} model objects. Because the returned list differs depending on whether a no penalty subset is included or a Poisson versus a negative binomial model is fit, the \code{print} function returns the object names of the fitted object. 
+<<echo=TRUE>>=
+print(nb)
+@
+By default \code{coef}, \code{predict}, and \code{summary} extracts the relevant information from the step in the solution path that attained the minimum BIC.
+<<echo=TRUE>>=
+summary(nb)
+@
+However, any step along the solution path can be extracted by specifying the step using the \code{model.select} parameter for these three functions. For example, the model attaining the minimum BIC can be extracted using 
+\newline \code{summary(nb, model.select="AIC")}. \newline Alternatively, the 250$^{th}$ step can be extracted using \newline \code{summary(nb, model.select=250)}. 
+
+The \code{plot} function plots the solution path of the model fit. The vertical axis can be changed using the \code{type} parameter with allowable selections being \code{"trace"} (default), \code{"AIC"}, \code{"BIC"} or \code{"logLik"}. Although there are default x-axis, y-axis, and titles provided for each plot, the user can modify these by supplying their own arguments to \code{xlab}, \code{ylab}, and \code{main}, respectively.
+\begin{figure}[h]
+  \begin{center}
+<<fig=TRUE, echo=TRUE, width=4, height=4>>=
+plot(nb)
+@
+    \caption{Coefficient estimates along the solution path for a fitted \code{countgmifs} object.}
+  \end{center}
+\end{figure}
+
+The \code{coef} function extracts the estimated parameters and returns them as a vector. The default is to select the coefficients from the step at which the BIC attains a minimum.
+<<echo=TRUE>>=
+coef.BIC<-coef(nb)
+coef.BIC[coef.BIC!=0]
+@
+
+We can also extract the coefficients from the AIC selected model.
+<<echo=TRUE>>=
+coef.AIC<-coef(nb, model.select="AIC")
+coef.AIC[coef.AIC!=0]
+@
+
+The \code{predict} function (or equivalently, \code{fitted}) returns the fitted values from the model. As with \code{coef} and \code{summary} the \code{predict} function by default extracts the model that attained the minimum BIC, but predictions for any step along the solution path can be obtained by specifying the step using the \code{model.select} parameter. 
+
+<<echo=TRUE>>=
+yhat <- predict(nb, model.select="AIC")
+@
+\begin{figure}[h]
+  \begin{center}
+<<fig=TRUE, echo=TRUE, width=4, height=4>>=
+plot(yhat, y)
+@
+    \caption{Observed versus fitted values from the \code{countgmifs} object.}
+  \end{center}
+\end{figure}
+
+The National Institutes of Health released notice NOT-OD-15-102 detailing the requirement for researchers to consider sex as a biological variable, which may lead the analyst to coerce sex into the multivariable model. There are a multitude of clinical scenarios where it is of primary interest to discover the additional predictive value of including molecular features beyond already known risk factors. Therefore, we extended our method to penalize some covariates (high-throughput genomic features) without penalizing others (such as demographic and/or clinical covariates) \cite{Gentry}.   The following example is merely to illustrate additional flexibility of the package. Suppose that \code{Var1} is to be coerced into the model while \code{Var2 - Var10} are to be penalized. Any variable(s) to be coerced into the model should appear on the right-hand side of the model formula and represents the \lq\lq unpenalized predictors.\rq\rq\ The model can be fit using
+<<echo=TRUE>>=
+nb.2<-countgmifs(y ~ Var1 , data=data, offset=NULL, 
+      x=c("Var2", "Var3", "Var4", "Var5", "Var6", "Var7", "Var8", "Var9", "Var10"), 
+      epsilon=0.01, tol=0.001, scale=TRUE, verbose=FALSE)
+summary(nb.2)
+@
+
+When predicting the outcome for a new set of observations, the \code{predict} function will accept arguments for \code{newx} (the penalized predictors), \code{neww} (the unpenalized predictors using model formula notation, \code{newdata} (new \code{data.frame} that contains the unpenalized predictors), and \code{newoffset} which is required if an offset was used in the fitted model. Suppose we want to leave observation 1 out, fit the model, then predict the class for observation 1 as a left out test set where we have coerced \code{Var1} in the model by including it as an unpenalized predictor. The following code would be used:
+\begin{verbatim}
+nb.m1 <- countgmifs(y ~ Var1 , data=data[-1,], offset=NULL, 
+     x=c("Var2", "Var3", "Var4", "Var5", "Var6", "Var7", "Var8", "Var9", "Var10"),
+     epsilon=0.01, tol=0.001, scale=TRUE, verbose=FALSE)
+predict(nb.m1, neww=~Var1, newdata=data[1,],
+	newx=data[1,c("Var2", "Var3", "Var4", "Var5", "Var6", "Var7", "Var8", "Var9", "Var10")])
+\end{verbatim}
+
+
+\section*{Acknowledgments}
+Research reported in this tutorial was supported by the National Library Of Medicine of the National Institutes of Health under Award Number R01LM011169 and by the National Institute of Environmental Health Sciences under Award Number T32ES007334. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+
+\bibliography{countgmifs}
+
+\end{document}
+
+
