@@ -18,7 +18,7 @@
 #' @examples
 #' countgmifs()
 
-countgmifs<-function (formula, data, x=NULL, offset, subset, epsilon=0.001, tol=1e-5, scale=TRUE, verbose=FALSE, 
+countgmifs<-function (formula, data, x=NULL, offset, subset, epsilon=0.001, tol=1e-5, scale=TRUE, verbose=FALSE,
   family = "nb", ...) {
 	mf <- match.call(expand.dots = FALSE)
 	cl <- match.call()
@@ -41,13 +41,13 @@ countgmifs<-function (formula, data, x=NULL, offset, subset, epsilon=0.001, tol=
 				stop("'subset' must evaluate to logical" )
 			r <- r & !is.na(r)
 		}
-	if (class(x)=="character") {
+	if (sum(class(x)%in%"character")==1) {
 		nl <- as.list( 1:ncol(data))
 		names(nl) <- names( data)
 		vars <- eval(substitute(x), nl, parent.frame())
 		x <- data [r , vars, drop=FALSE ]
 		x <- as.matrix(x )
-	} else if (class(x)== "matrix" || class(x)== "data.frame") {
+	} else if ( sum(class(x)%in%"matrix")==1 || sum(class(x)%in%"data.frame")==1) {
 		x <- x[r,, drop =FALSE]
 		x <- as.matrix(x)
 	}
@@ -97,7 +97,7 @@ countgmifs<-function (formula, data, x=NULL, offset, subset, epsilon=0.001, tol=
 			} else {
 				initialize<-glm(y~w-1, family=poisson)
 			}
-		}	
+		}
 		LL0 <- Likelihood <- logLik(initialize)
 		# Log-likelihood for model with no penalized predictors
 		AIC<-AIC(initialize)
@@ -121,7 +121,7 @@ countgmifs<-function (formula, data, x=NULL, offset, subset, epsilon=0.001, tol=
 			if (family=="nb") {
 				u <- t(x) %*% ((y- exp(Xb)) /(1+ (a*exp(Xb))))
 			} else {
-				u <- t(x)%*%(y-exp(Xb)) 
+				u <- t(x)%*%(y-exp(Xb))
 			}
 			# Likelihood gradient value- NEGATIVE BINOMIAL Hilbe Page 192
 			update.j <- which.min(-u)
@@ -143,14 +143,14 @@ countgmifs<-function (formula, data, x=NULL, offset, subset, epsilon=0.001, tol=
 				p <- sum(Estimates[step,]!=0) + length(theta) + 1
 				Likelihood[step]<- LL1<- -out$value
         		AIC[step]<- 2*p-2*Likelihood[step]
-        		BIC[step]<- p*log(n) - 2*Likelihood[step]	
+        		BIC[step]<- p*log(n) - 2*Likelihood[step]
 			} else {
 				out <- optim(theta, poisson.theta, w=w, x=x, y=y, offset=offset, beta=beta, method="BFGS")
 				theta <- out$par
 				p <- sum(Estimates[step+1,]!=0) + length(theta)
 				Likelihood[step]<- LL1<- -out$value
         		AIC[step]<- 2*p-2*Likelihood[step]
-        		BIC[step]<- p*log(n) - 2*Likelihood[step]	
+        		BIC[step]<- p*log(n) - 2*Likelihood[step]
 			}
 			# Keep track of theta values
 			theta.update <- rbind(theta.update, theta)

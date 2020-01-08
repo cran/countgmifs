@@ -1,7 +1,7 @@
-f9686e7b0be04d2f0e382164a0c955fc *DESCRIPTION
+aa597ed5b0110311f13755d05c951013 *DESCRIPTION
 12f275231b4238e71d2fc3e4536d9daa *NAMESPACE
 f58d0788652ffae1c3ba93494ea06dbf *R/coef.countgmifs.R
-8d3161f1a552f4a87d9b66ef9d24c907 *R/countgmifs.R
+c10dc8f2bc845598c6059d4b4164412e *R/countgmifs.R
 2001d013f2e13700c5ecfc7d4cfe69b2 *R/fitted.countgmifs.R
 ff19cd5960f57d297639fba7a6f3d0d9 *R/hilbe.R
 81f7500c591f1f985bb821bd8678f502 *R/nb.theta.R
@@ -10,10 +10,12 @@ ff19cd5960f57d297639fba7a6f3d0d9 *R/hilbe.R
 fa0d2ff4a21ed7c19d07a79b395055e2 *R/predict.countgmifs.R
 73322b284a9f7a88ef7d564fd1468e09 *R/print.countgmifs.R
 4547828db480849ecd844b3cd19a3f6a *R/summary.countgmifs.R
-8486412b6baa533eb11289159525e36f *build/partial.rdb
-19893d337a90a669ed0dc768aa090109 *build/vignette.rds
-b579306c7f68e65276682a71da5d51ea *inst/doc/countgmifs.R
-8b583d2ab8b84f5a370253a602e64bc9 *inst/doc/countgmifs.pdf
+8cbc107bae96a6453b4fcf21cf5e2d85 *build/partial.rdb
+a30774cd54505d2d9d650c988c8b24f3 *build/vignette.rds
+37b03067dfee1aa47ac6b28cdaf28f5c *inst/CITATION
+0570ace3133e78d8ea43984d098d2249 *inst/NEWS.Rd
+8f6f29d439cdae884bead8be488226be *inst/doc/countgmifs.R
+71134da2c25b3da1c970c87e88536781 *inst/doc/countgmifs.pdf
 7377e2cc79d7639c4c445272a484fd89 *inst/doc/countgmifs.rnw
 ad42d427ccf20dbff9cc9e71aab6d6fd *man/coef.countgmifs.Rd
 838b506f40970407bc930610e5e0f007 *man/countgmifs-internal.Rd

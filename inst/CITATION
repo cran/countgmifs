@@ -1,0 +1,17 @@
+citHeader("To cite countgmifs in publications use:")
+
+citEntry(entry = "Article",
+  title        = "Penalized negative binomial models for modeling an overdispersed count outcome with a high-dimensional predictor space: Application predicting micronuclei frequency",
+  author       = personList(as.person("Rebecca R. Lehman"), as.person("Kellie J. Archer")),
+  journal      = "PLoS One",
+  year         = "2019",
+  volume	   = "14",
+  pages        = "e0209923",
+  url          = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6324811/",
+
+  textVersion  =
+  paste("Rebecca R. Lehman, Kellie J. Archer (2019).",
+        "Penalized negative binomial models for modeling an overdispersed count outcome with a high-dimensional predictor space: Application predicting micronuclei frequency..",
+        "PLoS One, 14(1):e0209923.",
+        "URL https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6324811/.")
+)

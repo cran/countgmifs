@@ -1,5 +1,4 @@
 ### R code from vignette source 'countgmifs.rnw'
-### Encoding: UTF-8
 
 ###################################################
 ### code chunk number 1: countgmifs.rnw:67-68
